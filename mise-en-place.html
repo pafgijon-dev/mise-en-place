@@ -1,0 +1,833 @@
+<title>Mise en Place del Pase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#E9ECEA; --surface:#FFFFFF; --surface-2:#F3F6F4; --surface-3:#E2E7E4;
+  --ink:#171A18; --ink-2:#5E6663; --ink-3:#8A928E;
+  --line:#D5DAD7; --line-2:#E4E8E6;
+  --accent:#3F6B7D; --accent-ink:#FFFFFF;
+  --rojo:#C33027; --rojo-soft:#F8E3E1;
+  --naranja:#B96A0E; --naranja-soft:#FBEBD5;
+  --verde:#3B7A43; --verde-soft:#DFEFE1;
+  --shadow:0 1px 2px rgba(18,32,26,.07), 0 8px 24px rgba(18,32,26,.06);
+  --sheet-shadow:0 -8px 40px rgba(10,20,16,.22);
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101312; --surface:#191D1B; --surface-2:#212724; --surface-3:#2A312D;
+    --ink:#E9EDE8; --ink-2:#9BA39E; --ink-3:#7B837E;
+    --line:#2C332F; --line-2:#242A27;
+    --accent:#7FB3C6; --accent-ink:#0E1518;
+    --rojo:#F26A5F; --rojo-soft:#3A1E1B;
+    --naranja:#E8A147; --naranja-soft:#3A2915;
+    --verde:#6FBE78; --verde-soft:#1B3320;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    --sheet-shadow:0 -8px 40px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101312; --surface:#191D1B; --surface-2:#212724; --surface-3:#2A312D;
+  --ink:#E9EDE8; --ink-2:#9BA39E; --ink-3:#7B837E;
+  --line:#2C332F; --line-2:#242A27;
+  --accent:#7FB3C6; --accent-ink:#0E1518;
+  --rojo:#F26A5F; --rojo-soft:#3A1E1B;
+  --naranja:#E8A147; --naranja-soft:#3A2915;
+  --verde:#6FBE78; --verde-soft:#1B3320;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  --sheet-shadow:0 -8px 40px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:16px; line-height:1.4;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.cond{font-family:"Barlow Condensed","IBM Plex Sans",sans-serif}
+
+/* ---------- shell ---------- */
+.app{max-width:640px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 14px 10px;min-height:60px}
+.bar .titles{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.eyebrow{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);line-height:1.1}
+.bar h1{margin:0;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:26px;line-height:1.08;letter-spacing:.005em;text-wrap:balance;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iconbtn{width:40px;height:40px;display:grid;place-items:center;border-radius:10px;color:var(--ink-2);flex:none}
+.iconbtn:hover{background:var(--surface-3);color:var(--ink)}
+.iconbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.txtbtn{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);padding:9px 10px;border-radius:10px;flex:none}
+.txtbtn:hover{background:var(--surface-3)}
+.txtbtn.on{background:var(--accent);color:var(--accent-ink)}
+
+main{flex:1;padding:14px 14px 96px;display:flex;flex-direction:column;gap:14px}
+
+/* ---------- listas ---------- */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px 11px 0;position:relative;min-height:60px;border-top:1px solid var(--line-2)}
+.list>.row:first-child,.list>.editrow:first-child{border-top:0}
+.row:hover{background:var(--surface-2)}
+.row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.row-title{font-weight:500;font-size:16.5px;line-height:1.25;overflow-wrap:anywhere}
+.row-title.done{color:var(--ink-2)}
+.row-meta{font-size:13px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.row-meta .qty{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink-2)}
+.row-right{display:flex;align-items:center;gap:8px;flex:none;color:var(--ink-3)}
+.row-right svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.count{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.pad-l{padding-left:14px}
+
+/* franja de estado a la izquierda de grupos */
+.stripe{width:6px;align-self:stretch;flex:none;margin:-11px 0;border-radius:0}
+.stripe.e0{background:var(--rojo)} .stripe.e1{background:var(--naranja)} .stripe.e2{background:var(--verde)}
+.stripe.empty{background:var(--line)}
+
+/* círculo de estado del ingrediente */
+.dot{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;border:2.5px solid var(--rojo);background:var(--rojo-soft);color:var(--rojo);margin-left:14px;transition:background .12s ease,border-color .12s ease}
+.dot svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.dot.e1{border-color:var(--naranja);background:var(--naranja-soft);color:var(--naranja)}
+.dot.e2{border-color:var(--verde);background:var(--verde);color:#fff}
+.dot .half{width:14px;height:14px;border-radius:50%;background:currentColor;clip-path:inset(0 50% 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* barra segmentada */
+.segbar{display:flex;gap:2px;height:5px;border-radius:3px;overflow:hidden}
+.segbar i{flex:1;min-width:3px;border-radius:2px;background:var(--rojo)}
+.segbar i.e1{background:var(--naranja)} .segbar i.e2{background:var(--verde)}
+.segbar.empty i{background:var(--line)}
+
+/* chips y badges */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--surface-3);color:var(--ink-2);white-space:nowrap}
+.chip.frio{background:var(--accent);color:var(--accent-ink)}
+.chip.share{background:transparent;border:1px solid var(--line);color:var(--ink-3)}
+.where{font-size:12.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* fila de añadir */
+.add{display:flex;align-items:center;gap:10px;width:100%;padding:14px;color:var(--accent);font-weight:600;font-size:15px;border-top:1px dashed var(--line);background:var(--surface-2)}
+.add:hover{background:var(--surface-3)}
+.add svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+
+/* controles de edición */
+.editrow{display:flex;align-items:center;gap:6px;padding:8px 10px 8px 0;border-top:1px solid var(--line-2);min-height:58px}
+.editrow .nm{flex:1;min-width:0;font-weight:500;padding-left:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);flex:none}
+.mini:hover{background:var(--surface-3);color:var(--ink)}
+.mini[disabled]{opacity:.32;cursor:default}
+.mini.danger:hover{color:var(--rojo);border-color:var(--rojo)}
+.mini svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* cabecera de sección */
+.sec{display:flex;align-items:center;gap:10px;padding:2px 4px 0}
+.sec h2{margin:0;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.sec .n{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;color:var(--ink-3)}
+.sec .ln{flex:1;height:1px;background:var(--line)}
+.sec.rojo h2{color:var(--rojo)} .sec.naranja h2{color:var(--naranja)} .sec.verde h2{color:var(--verde)}
+
+/* resumen superior */
+.summary{display:flex;gap:10px;align-items:stretch}
+.tile{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;display:flex;flex-direction:column;gap:3px;box-shadow:var(--shadow);text-align:left}
+.tile .k{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.tile .v{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:22px;line-height:1.1}
+.tile.rojo .v{color:var(--rojo)} .tile.naranja .v{color:var(--naranja)} .tile.verde .v{color:var(--verde)}
+.tile.frio{border-color:var(--accent)} .tile.frio .v{color:var(--accent)}
+
+.banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface-2);border:1px dashed var(--line);border-radius:var(--r);padding:11px 13px;font-size:13.5px;color:var(--ink-2)}
+.banner b{color:var(--ink);font-weight:600}
+.banner button{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+.empty{padding:34px 20px;text-align:center;color:var(--ink-2);font-size:14.5px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.empty strong{display:block;font-family:"Barlow Condensed",sans-serif;font-size:19px;letter-spacing:.02em;color:var(--ink);margin-bottom:5px}
+
+/* buscador y filtros */
+.tools{display:flex;flex-direction:column;gap:10px}
+.search{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 12px;box-shadow:var(--shadow)}
+.search svg{width:19px;height:19px;fill:none;stroke:var(--ink-3);stroke-width:2;flex:none}
+.search input{flex:1;border:0;background:none;padding:13px 0;outline:none;font-size:16px}
+.filters{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.fbtn{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;text-transform:uppercase;padding:7px 13px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);white-space:nowrap;flex:none}
+.fbtn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* pestañas inferiores */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabinner{max-width:640px;margin:0 auto;display:flex}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 0 10px;color:var(--ink-3);font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:13.5px;letter-spacing:.1em;text-transform:uppercase}
+.tab svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--accent)}
+
+/* panel inferior (sheet) */
+.scrim{position:fixed;inset:0;background:rgba(10,18,14,.45);z-index:40;display:none}
+.scrim.open{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top-left-radius:20px;border-top-right-radius:20px;box-shadow:var(--sheet-shadow);max-height:88vh;display:none;flex-direction:column;transform:translateY(100%)}
+.sheet.open{display:flex;transform:none;transition:transform .18s ease}
+.sheet-inner{max-width:640px;margin:0 auto;width:100%;display:flex;flex-direction:column;min-height:0}
+.sheet-head{display:flex;align-items:center;gap:10px;padding:16px 16px 10px}
+.sheet-head h2{flex:1;margin:0;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:23px;letter-spacing:.01em}
+.sheet-body{padding:0 16px;overflow-y:auto;display:flex;flex-direction:column;gap:13px}
+.sheet-foot{padding:14px 16px calc(16px + env(safe-area-inset-bottom));display:flex;gap:10px}
+.grip{width:38px;height:4px;border-radius:2px;background:var(--line);margin:8px auto 0}
+label.f{display:flex;flex-direction:column;gap:6px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:14px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2)}
+label.f input[type=text]{font-family:"IBM Plex Sans",sans-serif;font-weight:400;font-size:16.5px;letter-spacing:0;text-transform:none;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:12px 13px;outline:none;width:100%}
+label.f input[type=text]:focus{border-color:var(--accent)}
+.toggle{display:flex;align-items:center;gap:11px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:12px 13px;cursor:pointer}
+.toggle input{width:21px;height:21px;accent-color:var(--accent);flex:none;margin:0}
+.toggle .tt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.toggle .tt b{font-weight:600;font-size:15px}
+.toggle .tt span{font-size:12.5px;color:var(--ink-2)}
+.btn{flex:1;padding:14px;border-radius:12px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:17px;letter-spacing:.09em;text-transform:uppercase;text-align:center;background:var(--surface-3);color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.danger{background:transparent;border:1px solid var(--rojo);color:var(--rojo)}
+.pick{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:12px 4px;border-top:1px solid var(--line-2)}
+.pick .pk-main{flex:1;min-width:0}
+.pick .pk-main b{display:block;font-weight:500;font-size:16px}
+.pick .pk-main span{font-size:12.5px;color:var(--ink-3)}
+.hint{font-size:13px;color:var(--ink-2);line-height:1.45}
+.keeplist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:11px;overflow:hidden;max-height:38vh;overflow-y:auto}
+.keeplist label{display:flex;align-items:center;gap:11px;padding:11px 13px;border-top:1px solid var(--line-2);cursor:pointer;font-size:15px}
+.keeplist label:first-child{border-top:0}
+.keeplist input{width:20px;height:20px;accent-color:var(--verde);flex:none;margin:0}
+/* estado de guardado */
+.syncline{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:var(--ink-3);padding:2px 0 6px;text-align:center}
+.syncline .pt{width:7px;height:7px;border-radius:50%;background:var(--verde);flex:none}
+.syncline.guardando .pt{background:var(--naranja)}
+.syncline.conectando .pt{background:var(--line)}
+.syncline.local .pt,.syncline.error .pt{background:var(--rojo)}
+.syncline.local,.syncline.error{color:var(--rojo)}
+.flash{animation:fl .7s ease}
+@keyframes fl{0%{background:var(--surface-3)}100%{background:transparent}}
+</style>
+
+<div class="app">
+  <header class="topbar"><div class="bar" id="bar"></div></header>
+  <main id="screen"></main>
+  <nav class="tabbar"><div class="tabinner" id="tabs"></div></nav>
+</div>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="grip"></div>
+  <div class="sheet-inner">
+    <div class="sheet-head"><h2 id="sheetTitle"></h2><button class="iconbtn" id="sheetClose" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <form id="sheetForm"><div class="sheet-body" id="sheetBody"></div><div class="sheet-foot" id="sheetFoot"></div></form>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ iconos ============ */
+var I = {
+  back:'<svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>',
+  chev:'<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>',
+  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  pencil:'<svg viewBox="0 0 24 24"><path d="M4 20h4l10-10a2.5 2.5 0 10-3.5-3.5L4.5 16.5 4 20z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>',
+  up:'<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  down:'<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
+  reset:'<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 4v7h-7"/></svg>',
+  search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+  board:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg>',
+  list:'<svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>'
+};
+
+/* ============ datos ============ */
+var KEY='mep.v1';
+function uid(p){return p+Math.random().toString(36).slice(2,8)}
+
+function seed(){
+  var it={};
+  function mk(id,nombre,cantidad,estado,frio,nota){it[id]={id:id,nombre:nombre,cantidad:cantidad||'',nota:nota||'',frio:!!frio,estado:estado};return id}
+  mk('i1','Croquetas de jamón','24 ud',2,true,'Sacar la noche antes');
+  mk('i2','Alioli de ajo negro','300 g',2,false,'');
+  mk('i3','Brotes aliñados','2 bandejas',2,false,'Aliñar en el momento');
+  mk('i4','Carne picada a cuchillo','800 g',1,false,'');
+  mk('i5','Aliño de tartar','250 ml',2,false,'');
+  mk('i6','Yemas curadas','12 ud',0,false,'48 h en sal y azúcar');
+  mk('i7','Pan de cristal','2 barras',0,false,'Tostar al pase');
+  mk('i8','Lomos de lubina','16 ud',0,true,'Sacar por la mañana');
+  mk('i9','Beurre blanc','700 ml',0,false,'Montar al momento, no hervir');
+  mk('i10','Puré de coliflor','1,5 L',0,false,'');
+  mk('i11','Cebolla encurtida','500 g',0,false,'');
+  mk('i12','Carrillera cocinada','14 ud',2,true,'Sacar 2 días antes');
+  mk('i13','Jugo de carne','1 L',1,true,'Sacar la noche antes');
+  mk('i14','Puré de patata trufado','2 L',0,false,'Regenerar a 65°');
+  mk('i15','Chips de puerro','1 bandeja',0,false,'');
+  mk('i16','Coulant de chocolate','18 ud',0,true,'Sacar 3 h antes');
+  mk('i17','Helado de vainilla','1 cubeta',0,true,'');
+  mk('i18','Crumble de avellana','400 g',0,false,'');
+  mk('i19','Tarta de queso','2 moldes',0,false,'Sacar de cámara 1 h antes');
+  mk('i20','Frutos rojos macerados','600 g',0,false,'');
+
+  var pl={
+    d1:{id:'d1',nombre:'Croquetas de jamón',itemIds:['i1','i2','i3']},
+    d2:{id:'d2',nombre:'Steak tartar',itemIds:['i4','i5','i6','i7','i3']},
+    d3:{id:'d3',nombre:'Lubina a la brasa',itemIds:['i8','i9','i10','i11']},
+    d4:{id:'d4',nombre:'Carrillera ibérica',itemIds:['i12','i13','i14','i11','i15']},
+    d5:{id:'d5',nombre:'Coulant de chocolate',itemIds:['i16','i17','i18']},
+    d6:{id:'d6',nombre:'Tarta de queso',itemIds:['i19','i20']}
+  };
+  return {
+    v:1, ejemplo:true,
+    pases:[
+      {id:'p1',nombre:'Pase 1 · Entrantes',platoIds:['d1','d2']},
+      {id:'p2',nombre:'Pase 2 · Principales',platoIds:['d3','d4']},
+      {id:'p3',nombre:'Pase 3 · Postres',platoIds:['d5','d6']}
+    ],
+    platos:pl, items:it
+  };
+}
+function load(){
+  try{var raw=localStorage.getItem(KEY); if(!raw) return null;
+    var d=JSON.parse(raw);
+    if(!d||!Array.isArray(d.pases)||!d.platos||!d.items) return null;
+    return d;
+  }catch(e){return null}
+}
+function guardaLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+/* save() = cambio de estructura · saveEstado(id) = una marca · saveEstados() = todas */
+function save(){guardaLocal(); subirEstructura(); if(!estadosCreado) subirEstados(null)}
+function saveEstado(id){guardaLocal(); var c={}; c[id]=S.items[id].estado; subirEstados(c)}
+function saveEstados(){guardaLocal(); subirEstados(null)}
+function touched(){if(S.ejemplo){S.ejemplo=false}}
+
+var S=load()||seed();
+
+/* ============ vista ============ */
+var view={n:'pases'};
+var edit=false, filtro='pend', q='', flashId=null;
+
+/* ============ utilidades ============ */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function pase(id){for(var i=0;i<S.pases.length;i++){if(S.pases[i].id===id)return S.pases[i]}return null}
+function itemsDe(pl){var a=[];if(!pl)return a;for(var i=0;i<pl.itemIds.length;i++){var it=S.items[pl.itemIds[i]];if(it)a.push(it)}return a}
+function platosDe(p){var a=[];if(!p)return a;for(var i=0;i<p.platoIds.length;i++){var d=S.platos[p.platoIds[i]];if(d)a.push(d)}return a}
+function estadoDe(estados){
+  if(!estados.length) return -1;
+  var todos2=true, alguno=false;
+  for(var i=0;i<estados.length;i++){if(estados[i]!==2)todos2=false;if(estados[i]>0)alguno=true}
+  return todos2?2:(alguno?1:0);
+}
+function estadoPlato(pl){var its=itemsDe(pl),e=[];for(var i=0;i<its.length;i++)e.push(its[i].estado);
+  return {estado:estadoDe(e),segs:e,hechos:e.filter(function(x){return x===2}).length,total:e.length}}
+function estadoPase(p){var pls=platosDe(p),segs=[],todos=[];
+  for(var i=0;i<pls.length;i++){var st=estadoPlato(pls[i]);segs.push(st.estado<0?0:st.estado);for(var j=0;j<st.segs.length;j++)todos.push(st.segs[j])}
+  return {estado:estadoDe(todos),segs:segs,hechos:segs.filter(function(x){return x===2}).length,total:segs.length}}
+function usosDe(itemId){
+  var out=[];
+  for(var i=0;i<S.pases.length;i++){var p=S.pases[i];
+    for(var j=0;j<p.platoIds.length;j++){var d=S.platos[p.platoIds[j]];
+      if(d&&d.itemIds.indexOf(itemId)>=0)out.push({pase:p,plato:d})}}
+  return out;
+}
+function todosItems(){var a=[];for(var k in S.items){if(S.items.hasOwnProperty(k))a.push(S.items[k])}return a}
+function nombreCorto(n){var i=n.indexOf(' · ');return i>0?{eye:n.slice(0,i),tit:n.slice(i+3)}:{eye:'',tit:n}}
+function claseEstado(e){return e===2?'e2':(e===1?'e1':'e0')}
+function nomEstado(e){return e===2?'Listo':(e===1?'Empezado':'Sin empezar')}
+
+/* ============ piezas ============ */
+function segbar(segs){
+  if(!segs.length) return '<span class="segbar empty"><i></i></span>';
+  var h='<span class="segbar" aria-hidden="true">';
+  for(var i=0;i<segs.length;i++)h+='<i class="'+claseEstado(segs[i])+'"></i>';
+  return h+'</span>';
+}
+function filaItem(it,extraMeta,ctx){
+  var e=it.estado, marca=e===2?I.check:(e===1?'<span class="half"></span>':'');
+  var meta='';
+  if(it.cantidad) meta+='<span class="qty">'+esc(it.cantidad)+'</span>';
+  if(it.frio) meta+='<span class="chip frio">❄ Congelador</span>';
+  if(extraMeta) meta+=extraMeta;
+  if(it.nota) meta+='<span>'+esc(it.nota)+'</span>';
+  return '<button class="row'+(flashId===it.id?' flash':'')+'" data-act="cycle" data-id="'+it.id+'" '+
+    'aria-label="'+esc(it.nombre)+'. '+nomEstado(e)+'. Tocar para cambiar">'+
+    '<span class="dot '+claseEstado(e)+'">'+marca+'</span>'+
+    '<span class="row-main"><span class="row-title'+(e===2?' done':'')+'">'+esc(it.nombre)+'</span>'+
+    (meta?'<span class="row-meta">'+meta+'</span>':'')+'</span>'+
+    (ctx?'<span class="row-right"><span class="where">'+ctx+'</span></span>':'')+
+  '</button>';
+}
+function filaEdit(id,nombre,tipo,i,n,sub){
+  return '<div class="editrow" data-id="'+id+'">'+
+    '<span class="nm">'+esc(nombre)+(sub?' <span class="where">'+sub+'</span>':'')+'</span>'+
+    '<button type="button" class="mini" data-act="up" data-tipo="'+tipo+'" data-id="'+id+'" '+(i===0?'disabled':'')+' aria-label="Subir">'+I.up+'</button>'+
+    '<button type="button" class="mini" data-act="down" data-tipo="'+tipo+'" data-id="'+id+'" '+(i===n-1?'disabled':'')+' aria-label="Bajar">'+I.down+'</button>'+
+    '<button type="button" class="mini" data-act="edit" data-tipo="'+tipo+'" data-id="'+id+'" aria-label="Editar">'+I.pencil+'</button>'+
+    '<button type="button" class="mini danger" data-act="del" data-tipo="'+tipo+'" data-id="'+id+'" aria-label="Eliminar">'+I.trash+'</button>'+
+  '</div>';
+}
+function addRow(act,texto){return '<button class="add" data-act="'+act+'">'+I.plus+esc(texto)+'</button>'}
+
+/* ============ pantallas ============ */
+function pintaBar(){
+  var b=document.getElementById('bar'), h='';
+  if(view.n==='pases'){
+    h+='<div class="titles"><span class="eyebrow">Mise en place</span><h1>Pases del servicio</h1></div>'+
+       '<button class="iconbtn" data-act="reset" aria-label="Nuevo servicio">'+I.reset+'</button>'+
+       '<button class="txtbtn'+(edit?' on':'')+'" data-act="toggleEdit">'+(edit?'Hecho':'Editar')+'</button>';
+  } else if(view.n==='platos'){
+    var p=pase(view.paseId), nc=nombreCorto(p?p.nombre:'');
+    h+='<button class="iconbtn" data-act="back" aria-label="Volver a pases">'+I.back+'</button>'+
+       '<div class="titles"><span class="eyebrow">'+esc(nc.eye||'Pase')+'</span><h1>'+esc(nc.tit)+'</h1></div>'+
+       '<button class="txtbtn'+(edit?' on':'')+'" data-act="toggleEdit">'+(edit?'Hecho':'Editar')+'</button>';
+  } else if(view.n==='plato'){
+    var d=S.platos[view.platoId], p2=pase(view.paseId);
+    h+='<button class="iconbtn" data-act="back" aria-label="Volver a platos">'+I.back+'</button>'+
+       '<div class="titles"><span class="eyebrow">'+esc(p2?p2.nombre:'')+'</span><h1>'+esc(d?d.nombre:'')+'</h1></div>'+
+       '<button class="txtbtn'+(edit?' on':'')+'" data-act="toggleEdit">'+(edit?'Hecho':'Editar')+'</button>';
+  } else {
+    h+='<div class="titles"><span class="eyebrow">Todo el servicio</span><h1>Repaso de ingredientes</h1></div>'+
+       '<button class="iconbtn" data-act="reset" aria-label="Nuevo servicio">'+I.reset+'</button>';
+  }
+  b.innerHTML=h;
+}
+
+function vistaPases(){
+  var h='';
+  if(S.ejemplo){
+    h+='<div class="banner"><b>Datos de ejemplo.</b> Cámbialos por tu carta o <button data-act="vaciar">empieza de cero</button>.</div>';
+  }
+  var pend=0,frios=0,total=0;
+  var its=todosItems();
+  for(var i=0;i<its.length;i++){ if(!usosDe(its[i].id).length) continue; total++;
+    if(its[i].estado!==2){pend++; if(its[i].frio)frios++} }
+  h+='<div class="summary">'+
+     '<div class="tile rojo"><span class="k">Pendiente</span><span class="v">'+pend+'</span></div>'+
+     '<div class="tile verde"><span class="k">Listo</span><span class="v">'+(total-pend)+'</span></div>'+
+     '<button class="tile frio" data-act="verFrio"><span class="k">❄ Por sacar</span><span class="v">'+frios+'</span></button>'+
+     '</div>';
+
+  if(!S.pases.length){
+    h+='<div class="empty"><strong>Aún no hay pases</strong>Crea el primero y añádele sus platos.</div>';
+  }
+  h+='<div class="list">';
+  for(var k=0;k<S.pases.length;k++){
+    var p=S.pases[k], st=estadoPase(p);
+    if(edit){ h+=filaEdit(p.id,p.nombre,'pase',k,S.pases.length,st.total+' platos'); }
+    else{
+      h+='<button class="row" data-act="abrirPase" data-id="'+p.id+'">'+
+         '<span class="stripe '+(st.total?claseEstado(st.estado):'empty')+'"></span>'+
+         '<span class="row-main pad-l"><span class="row-title">'+esc(p.nombre)+'</span>'+segbar(st.segs)+'</span>'+
+         '<span class="row-right"><span class="count mono">'+st.hechos+'/'+st.total+'</span>'+I.chev+'</span></button>';
+    }
+  }
+  h+=addRow('nuevoPase','Añadir pase')+'</div>';
+  return h;
+}
+
+function vistaPlatos(){
+  var p=pase(view.paseId); if(!p){view={n:'pases'};return vistaPases()}
+  var h='', pls=platosDe(p);
+  if(!pls.length) h+='<div class="empty"><strong>Este pase no tiene platos</strong>Añade el primero abajo.</div>';
+  h+='<div class="list">';
+  for(var k=0;k<pls.length;k++){
+    var d=pls[k], st=estadoPlato(d);
+    if(edit){ h+=filaEdit(d.id,d.nombre,'plato',k,pls.length,st.total+' ingredientes'); }
+    else{
+      h+='<button class="row" data-act="abrirPlato" data-id="'+d.id+'">'+
+         '<span class="stripe '+(st.total?claseEstado(st.estado):'empty')+'"></span>'+
+         '<span class="row-main pad-l"><span class="row-title">'+esc(d.nombre)+'</span>'+segbar(st.segs)+'</span>'+
+         '<span class="row-right"><span class="count mono">'+st.hechos+'/'+st.total+'</span>'+I.chev+'</span></button>';
+    }
+  }
+  h+=addRow('nuevoPlato','Añadir plato')+'</div>';
+  return h;
+}
+
+function vistaPlato(){
+  var d=S.platos[view.platoId]; if(!d){view={n:'platos',paseId:view.paseId};return vistaPlatos()}
+  var its=itemsDe(d), st=estadoPlato(d), h='';
+  h+='<div class="sec '+(st.total?['rojo','naranja','verde'][st.estado]:'')+'"><h2>'+(st.total?nomEstado(st.estado):'Sin ingredientes')+'</h2>'+
+     '<span class="n">'+st.hechos+'/'+st.total+'</span><span class="ln"></span></div>';
+  if(!its.length) h+='<div class="empty"><strong>Sin ingredientes todavía</strong>Añade lo que necesitas tener preparado para este plato.</div>';
+  h+='<div class="list">';
+  for(var i=0;i<its.length;i++){
+    var it=its[i];
+    if(edit){
+      var us=usosDe(it.id).length;
+      h+=filaEdit(it.id,it.nombre,'item',i,its.length,us>1?'en '+us+' platos':'');
+    } else {
+      var us2=usosDe(it.id).length;
+      h+=filaItem(it,us2>1?'<span class="chip share">Compartido · '+us2+' platos</span>':'','');
+    }
+  }
+  h+=addRow('nuevoItem','Añadir ingrediente o preparación')+'</div>';
+  return h;
+}
+
+function vistaTodo(){
+  var h='', its=todosItems(), lista=[];
+  for(var i=0;i<its.length;i++){
+    var it=its[i], us=usosDe(it.id);
+    if(filtro==='frio'&&!it.frio) continue;
+    if(filtro==='pend'&&it.estado===2) continue;
+    if(q){
+      var hay=(it.nombre+' '+it.nota+' '+us.map(function(u){return u.plato.nombre+' '+u.pase.nombre}).join(' ')).toLowerCase();
+      if(hay.indexOf(q.toLowerCase())<0) continue;
+    }
+    lista.push({it:it,us:us});
+  }
+  lista.sort(function(a,b){
+    if(a.it.estado!==b.it.estado) return a.it.estado-b.it.estado;
+    if(a.it.frio!==b.it.frio) return a.it.frio?-1:1;
+    return a.it.nombre.localeCompare(b.it.nombre,'es');
+  });
+
+  h+='<div class="tools"><div class="search">'+I.search+
+     '<input id="q" type="text" inputmode="search" placeholder="Buscar ingrediente o plato" value="'+esc(q)+'" aria-label="Buscar"></div>'+
+     '<div class="filters">'+
+     '<button class="fbtn'+(filtro==='pend'?' on':'')+'" data-act="filtro" data-v="pend">Pendientes</button>'+
+     '<button class="fbtn'+(filtro==='todos'?' on':'')+'" data-act="filtro" data-v="todos">Todos</button>'+
+     '<button class="fbtn'+(filtro==='frio'?' on':'')+'" data-act="filtro" data-v="frio">❄ Congelador</button>'+
+     '</div></div>';
+
+  if(!lista.length){
+    h+='<div class="empty"><strong>'+(filtro==='pend'&&!q?'Todo listo':'Nada que mostrar')+'</strong>'+
+       (filtro==='pend'&&!q?'No queda nada pendiente en ningún pase.':'Prueba con otro filtro o búsqueda.')+'</div>';
+    return h;
+  }
+  var ult=-1;
+  for(var j=0;j<lista.length;j++){
+    var e=lista[j].it.estado;
+    if(e!==ult){
+      if(ult!==-1) h+='</div>';
+      var n=0; for(var z=0;z<lista.length;z++){if(lista[z].it.estado===e)n++}
+      h+='<div class="sec '+['rojo','naranja','verde'][e]+'"><h2>'+nomEstado(e)+'</h2><span class="n">'+n+'</span><span class="ln"></span></div><div class="list">';
+      ult=e;
+    }
+    var u=lista[j].us;
+    var ctx = u.length ? (u.length>1 ? u.length+' platos' : nombreCorto(u[0].pase.nombre).tit) : 'Sin plato';
+    h+=filaItem(lista[j].it,'', esc(ctx));
+  }
+  h+='</div>';
+  return h;
+}
+
+function pintaTabs(){
+  var t=document.getElementById('tabs');
+  var enPases=(view.n!=='todo');
+  t.innerHTML='<button class="tab'+(enPases?' on':'')+'" data-act="tab" data-v="pases">'+I.board+'Pases</button>'+
+              '<button class="tab'+(!enPases?' on':'')+'" data-act="tab" data-v="todo">'+I.list+'Todo</button>';
+}
+
+function render(){
+  pintaBar();
+  var m=document.getElementById('screen');
+  m.innerHTML = (view.n==='pases'?vistaPases(): view.n==='platos'?vistaPlatos(): view.n==='plato'?vistaPlato(): vistaTodo())
+    + '<div class="syncline" id="syncline"></div>';
+  pintaTabs(); pintaSync();
+  flashId=null;
+  if(view.n==='todo'){
+    var qi=document.getElementById('q');
+    if(qi&&document.body.dataset.focusq==='1'){ qi.focus(); qi.setSelectionRange(qi.value.length,qi.value.length) }
+  }
+}
+
+/* ============ panel inferior ============ */
+var scrim=document.getElementById('scrim'), sheet=document.getElementById('sheet');
+var sheetBody=document.getElementById('sheetBody'), sheetFoot=document.getElementById('sheetFoot');
+var sheetTitle=document.getElementById('sheetTitle'), sheetForm=document.getElementById('sheetForm');
+var onSubmit=null, onSheetClick=null;
+
+function abrirSheet(titulo,cuerpo,pie,submit,click){
+  sheetTitle.textContent=titulo; sheetBody.innerHTML=cuerpo; sheetFoot.innerHTML=pie;
+  onSubmit=submit||null; onSheetClick=click||null;
+  scrim.classList.add('open'); sheet.classList.add('open');
+  var f=sheet.querySelector('input[type=text]'); if(f){setTimeout(function(){f.focus();f.select()},60)}
+}
+function cerrarSheet(){scrim.classList.remove('open');sheet.classList.remove('open');onSubmit=null;onSheetClick=null;sheetBody.innerHTML='';sheetFoot.innerHTML=''}
+scrim.addEventListener('click',cerrarSheet);
+document.getElementById('sheetClose').addEventListener('click',cerrarSheet);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&sheet.classList.contains('open'))cerrarSheet()});
+sheetForm.addEventListener('submit',function(e){e.preventDefault();if(onSubmit)onSubmit(new FormData(sheetForm))});
+sheetForm.addEventListener('click',function(e){
+  var b=e.target.closest('[data-sact]'); if(!b)return;
+  e.preventDefault(); if(onSheetClick)onSheetClick(b.dataset.sact,b.dataset.id,b);
+});
+var pieOkCancel='<button type="button" class="btn" data-sact="cerrar">Cancelar</button><button type="submit" class="btn primary">Guardar</button>';
+
+/* ---- sheets concretos ---- */
+function sheetNombre(titulo,valor,label,cb){
+  abrirSheet(titulo,'<label class="f">'+esc(label)+'<input type="text" name="nombre" value="'+esc(valor)+'" autocomplete="off" required></label>',
+    pieOkCancel,
+    function(fd){var v=(fd.get('nombre')||'').trim(); if(!v)return; cb(v); cerrarSheet(); touched(); save(); render()},
+    function(a){if(a==='cerrar')cerrarSheet()});
+}
+function sheetItem(it,platoId){
+  var us=usosDe(it.id), esNuevo=!platoId;
+  var cuerpo=
+    '<label class="f">Nombre<input type="text" name="nombre" value="'+esc(it.nombre)+'" autocomplete="off" required></label>'+
+    '<label class="f">Cantidad<input type="text" name="cantidad" value="'+esc(it.cantidad)+'" autocomplete="off" placeholder="500 g · 2 L · 12 raciones"></label>'+
+    '<label class="f">Nota<input type="text" name="nota" value="'+esc(it.nota)+'" autocomplete="off" placeholder="Regenerar 8 min a 180°"></label>'+
+    '<label class="toggle"><input type="checkbox" name="frio" '+(it.frio?'checked':'')+'><span class="tt"><b>Sale del congelador</b><span>Aparece con ❄ y en el filtro de congelador</span></span></label>';
+  if(us.length>1) cuerpo+='<p class="hint">Este ingrediente se usa en <b>'+us.length+' platos</b>: '+esc(us.map(function(u){return u.plato.nombre}).join(', '))+'. Al marcarlo se actualiza en todos.</p>';
+  var pie='<button type="button" class="btn danger" data-sact="borrar">'+(us.length>1?'Quitar de este plato':'Eliminar')+'</button><button type="submit" class="btn primary">Guardar</button>';
+  abrirSheet(esNuevo?'Nuevo ingrediente':'Editar ingrediente',cuerpo,pie,
+    function(fd){
+      it.nombre=(fd.get('nombre')||'').trim()||it.nombre;
+      it.cantidad=(fd.get('cantidad')||'').trim();
+      it.nota=(fd.get('nota')||'').trim();
+      it.frio=fd.get('frio')==='on';
+      cerrarSheet(); touched(); save(); render();
+    },
+    function(a){
+      if(a==='cerrar')return cerrarSheet();
+      if(a==='borrar'){
+        var pl=S.platos[platoId||view.platoId];
+        if(us.length>1&&pl){ pl.itemIds=pl.itemIds.filter(function(x){return x!==it.id}) }
+        else{
+          for(var k in S.platos){if(S.platos.hasOwnProperty(k)){S.platos[k].itemIds=S.platos[k].itemIds.filter(function(x){return x!==it.id})}}
+          delete S.items[it.id];
+        }
+        cerrarSheet(); touched(); save(); render();
+      }
+    });
+}
+function sheetAnadirItem(platoId){
+  var pl=S.platos[platoId]; if(!pl)return;
+  var estado={q:''};
+  function cuerpo(){
+    var libres=todosItems().filter(function(it){return pl.itemIds.indexOf(it.id)<0});
+    var t=estado.q.trim().toLowerCase();
+    if(t) libres=libres.filter(function(it){return it.nombre.toLowerCase().indexOf(t)>=0});
+    libres.sort(function(a,b){return a.nombre.localeCompare(b.nombre,'es')});
+    var h='<label class="f">Nombre<input type="text" name="nombre" id="nq" value="'+esc(estado.q)+'" autocomplete="off" placeholder="Escribe el ingrediente o preparación"></label>';
+    h+='<button type="submit" class="btn primary" style="flex:none">'+(estado.q.trim()?'Crear «'+esc(estado.q.trim())+'»':'Crear nuevo')+'</button>';
+    if(libres.length){
+      h+='<p class="hint">O reutiliza uno que ya tienes. Se marcará a la vez en todos los platos que lo lleven.</p><div>';
+      for(var i=0;i<libres.length&&i<40;i++){
+        var it=libres[i], n=usosDe(it.id).length;
+        h+='<button type="button" class="pick" data-sact="usar" data-id="'+it.id+'">'+
+           '<span class="dot '+claseEstado(it.estado)+'" style="margin-left:0;width:24px;height:24px;border-width:2px">'+(it.estado===2?I.check:'')+'</span>'+
+           '<span class="pk-main"><b>'+esc(it.nombre)+'</b><span>'+(it.cantidad?esc(it.cantidad)+' · ':'')+(n?'en '+n+' plato'+(n>1?'s':''):'sin usar')+'</span></span></button>';
+      }
+      h+='</div>';
+    }
+    return h;
+  }
+  function pinta(){
+    sheetBody.innerHTML=cuerpo();
+    var i=document.getElementById('nq');
+    if(i){ i.focus(); i.setSelectionRange(i.value.length,i.value.length);
+      i.addEventListener('input',function(){estado.q=i.value;pinta()}) }
+  }
+  abrirSheet('Añadir a '+pl.nombre,'','<button type="button" class="btn" data-sact="cerrar">Cerrar</button>',
+    function(fd){
+      var v=(estado.q||'').trim(); if(!v)return;
+      var id=uid('i'); S.items[id]={id:id,nombre:v,cantidad:'',nota:'',frio:false,estado:0};
+      pl.itemIds.push(id); cerrarSheet(); touched(); save(); render();
+      var nuevo=S.items[id]; sheetItem(nuevo,pl.id);
+    },
+    function(a,id){
+      if(a==='cerrar')return cerrarSheet();
+      if(a==='usar'){ if(pl.itemIds.indexOf(id)<0)pl.itemIds.push(id); cerrarSheet(); touched(); save(); render() }
+    });
+  pinta();
+}
+function sheetReset(){
+  var verdes=todosItems().filter(function(it){return it.estado===2&&usosDe(it.id).length});
+  verdes.sort(function(a,b){return a.nombre.localeCompare(b.nombre,'es')});
+  var cuerpo='<p class="hint">Todo vuelve a rojo para empezar el servicio. Marca lo que aguanta y quieras dejar en verde.</p>';
+  if(verdes.length){
+    cuerpo+='<div class="keeplist">';
+    for(var i=0;i<verdes.length;i++){
+      cuerpo+='<label><input type="checkbox" name="keep" value="'+verdes[i].id+'"><span>'+esc(verdes[i].nombre)+'</span></label>';
+    }
+    cuerpo+='</div>';
+  } else {
+    cuerpo+='<p class="hint">Ahora mismo no hay nada en verde.</p>';
+  }
+  abrirSheet('Nuevo servicio',cuerpo,
+    '<button type="button" class="btn" data-sact="cerrar">Cancelar</button><button type="submit" class="btn primary">Empezar</button>',
+    function(fd){
+      var keep=fd.getAll('keep');
+      for(var k in S.items){if(S.items.hasOwnProperty(k)){S.items[k].estado = keep.indexOf(k)>=0?2:0}}
+      cerrarSheet(); saveEstados(); render();
+    },
+    function(a){if(a==='cerrar')cerrarSheet()});
+}
+function sheetVaciar(){
+  abrirSheet('Empezar de cero',
+    '<p class="hint">Se borran los pases, platos e ingredientes de ejemplo y la app queda vacía para tu carta. No se puede deshacer.</p>',
+    '<button type="button" class="btn" data-sact="cerrar">Cancelar</button><button type="submit" class="btn danger">Borrar todo</button>',
+    function(){ S={v:1,ejemplo:false,pases:[],platos:{},items:{}}; view={n:'pases'}; edit=false; cerrarSheet(); save(); render() },
+    function(a){if(a==='cerrar')cerrarSheet()});
+}
+
+/* ============ acciones ============ */
+function mover(arr,i,d){var j=i+d; if(j<0||j>=arr.length)return; var t=arr[i];arr[i]=arr[j];arr[j]=t}
+
+document.getElementById('screen').addEventListener('click',function(e){
+  var el=e.target.closest('[data-act]'); if(!el)return;
+  var a=el.dataset.act, id=el.dataset.id, tipo=el.dataset.tipo;
+
+  if(a==='cycle'){
+    var it=S.items[id]; if(!it)return;
+    it.estado=(it.estado+1)%3; flashId=id; saveEstado(id); render(); return;
+  }
+  if(a==='abrirPase'){ view={n:'platos',paseId:id}; edit=false; render(); return }
+  if(a==='abrirPlato'){ view={n:'plato',paseId:view.paseId,platoId:id}; edit=false; render(); return }
+  if(a==='verFrio'){ view={n:'todo'}; filtro='frio'; q=''; render(); return }
+  if(a==='vaciar'){ sheetVaciar(); return }
+  if(a==='filtro'){ filtro=el.dataset.v; document.body.dataset.focusq='0'; render(); return }
+
+  if(a==='nuevoPase'){ sheetNombre('Nuevo pase','','Nombre del pase',function(v){
+      var np={id:uid('p'),nombre:v,platoIds:[]}; S.pases.push(np); }); return }
+  if(a==='nuevoPlato'){ sheetNombre('Nuevo plato','','Nombre del plato',function(v){
+      var d={id:uid('d'),nombre:v,itemIds:[]}; S.platos[d.id]=d; var p=pase(view.paseId); if(p)p.platoIds.push(d.id); }); return }
+  if(a==='nuevoItem'){ sheetAnadirItem(view.platoId); return }
+
+  if(a==='up'||a==='down'){
+    var d2=a==='up'?-1:1;
+    if(tipo==='pase'){ mover(S.pases,S.pases.findIndex(function(x){return x.id===id}),d2) }
+    if(tipo==='plato'){ var p3=pase(view.paseId); if(p3)mover(p3.platoIds,p3.platoIds.indexOf(id),d2) }
+    if(tipo==='item'){ var pl3=S.platos[view.platoId]; if(pl3)mover(pl3.itemIds,pl3.itemIds.indexOf(id),d2) }
+    touched(); save(); render(); return;
+  }
+  if(a==='edit'){
+    if(tipo==='pase'){ var p4=pase(id); sheetNombre('Editar pase',p4.nombre,'Nombre del pase',function(v){p4.nombre=v}) }
+    if(tipo==='plato'){ var d4=S.platos[id]; sheetNombre('Editar plato',d4.nombre,'Nombre del plato',function(v){d4.nombre=v}) }
+    if(tipo==='item'){ sheetItem(S.items[id],view.platoId) }
+    return;
+  }
+  if(a==='del'){
+    if(tipo==='pase'){
+      var p5=pase(id);
+      abrirSheet('Eliminar pase','<p class="hint">Se elimina <b>'+esc(p5.nombre)+'</b> y sus '+p5.platoIds.length+' platos. Los ingredientes siguen disponibles para otros platos.</p>',
+        '<button type="button" class="btn" data-sact="cerrar">Cancelar</button><button type="submit" class="btn danger">Eliminar</button>',
+        function(){ for(var i=0;i<p5.platoIds.length;i++)delete S.platos[p5.platoIds[i]];
+          S.pases=S.pases.filter(function(x){return x.id!==id}); cerrarSheet(); touched(); save(); render() },
+        function(x){if(x==='cerrar')cerrarSheet()});
+    }
+    if(tipo==='plato'){
+      var d5=S.platos[id];
+      abrirSheet('Eliminar plato','<p class="hint">Se elimina <b>'+esc(d5.nombre)+'</b> de este pase. Los ingredientes siguen disponibles para otros platos.</p>',
+        '<button type="button" class="btn" data-sact="cerrar">Cancelar</button><button type="submit" class="btn danger">Eliminar</button>',
+        function(){ var p6=pase(view.paseId); if(p6)p6.platoIds=p6.platoIds.filter(function(x){return x!==id});
+          delete S.platos[id]; cerrarSheet(); touched(); save(); render() },
+        function(x){if(x==='cerrar')cerrarSheet()});
+    }
+    if(tipo==='item'){ sheetItem(S.items[id],view.platoId) }
+    return;
+  }
+});
+
+document.getElementById('bar').addEventListener('click',function(e){
+  var el=e.target.closest('[data-act]'); if(!el)return;
+  var a=el.dataset.act;
+  if(a==='back'){ view = view.n==='plato' ? {n:'platos',paseId:view.paseId} : {n:'pases'}; edit=false; render() }
+  if(a==='toggleEdit'){ edit=!edit; render() }
+  if(a==='reset'){ sheetReset() }
+});
+document.getElementById('tabs').addEventListener('click',function(e){
+  var el=e.target.closest('[data-act="tab"]'); if(!el)return;
+  document.body.dataset.focusq='0';
+  if(el.dataset.v==='todo'){ view={n:'todo'} } else { view={n:'pases'} }
+  edit=false; render();
+});
+document.getElementById('screen').addEventListener('input',function(e){
+  if(e.target.id==='q'){ q=e.target.value; document.body.dataset.focusq='1'; render() }
+});
+
+/* ============ guardado en la cuenta ============
+   Dos documentos, a propósito:
+   · mep/estructura — pases, platos y fichas de ingrediente. Cambia poco.
+   · mep/estados    — un campo por ingrediente con su color. Se escribe campo
+                      a campo (update), así dos cocineros marcando a la vez no
+                      se pisan: cada marca toca solo su campo.                */
+var DB=null, clienteId=uid('c'), sync='conectando', estrT=null, estadosCreado=false;
+var RUTA_E='mep/estructura', RUTA_S='mep/estados';
+
+function pintaSync(){
+  var el=document.getElementById('syncline'); if(!el)return;
+  el.className='syncline '+sync;
+  var txt = sync==='ok'?'Guardado en tu cuenta'
+          : sync==='guardando'?'Guardando…'
+          : sync==='error'?'No se pudo guardar en tu cuenta'
+          : sync==='conectando'?'Conectando con tu cuenta…'
+          : 'Solo en este dispositivo';
+  el.innerHTML='<span class="pt"></span>'+txt;
+}
+function ponSync(e){ sync=e; pintaSync() }
+
+function fichas(){
+  var o={};
+  for(var k in S.items){ if(S.items.hasOwnProperty(k)){ var it=S.items[k];
+    o[k]={nombre:it.nombre,cantidad:it.cantidad||'',nota:it.nota||'',frio:!!it.frio} } }
+  return o;
+}
+function mapaEstados(){
+  var m={};
+  for(var k in S.items){ if(S.items.hasOwnProperty(k)) m[k]=S.items[k].estado }
+  return m;
+}
+function subirEstructura(){
+  if(!DB) return;
+  if(estrT) clearTimeout(estrT);
+  ponSync('guardando');
+  estrT=setTimeout(function(){
+    estrT=null;
+    DB.doc(RUTA_E).set({pases:S.pases,platos:S.platos,items:fichas(),ejemplo:!!S.ejemplo,por:clienteId,rev:Date.now()})
+      .then(function(){ponSync('ok')},function(){ponSync('error')});
+  },400);
+}
+function subirEstados(campos){
+  if(!DB) return;
+  ponSync('guardando');
+  var ref=DB.doc(RUTA_S);
+  var p = (campos && estadosCreado) ? ref.update(campos) : ref.set(mapaEstados());
+  p.then(function(){ estadosCreado=true; ponSync('ok') },
+    function(){
+      if(campos){ ref.set(mapaEstados()).then(function(){estadosCreado=true;ponSync('ok')},function(){ponSync('error')}) }
+      else ponSync('error');
+    });
+}
+
+function conectar(){
+  if(!window.claude||typeof window.claude.use!=='function'){ ponSync('local'); return }
+  var p;
+  try{ p=window.claude.use('db') }catch(e){ ponSync('local'); return }
+  if(!p||!p.then){ ponSync('local'); return }
+  p.then(function(db){
+    if(!db){ ponSync('local'); return }
+    DB=db; ponSync('guardando');
+
+    db.doc(RUTA_E).onSnapshot(function(snap){
+      if(!snap.exists){ subirEstructura(); return }
+      var d=snap.data()||{};
+      if(d.por===clienteId){ ponSync('ok'); return }
+      if(!Array.isArray(d.pases)||!d.platos||!d.items){ ponSync('ok'); return }
+      var nuevos={};
+      for(var k in d.items){ if(d.items.hasOwnProperty(k)){ var r=d.items[k]||{};
+        nuevos[k]={id:k,nombre:r.nombre||'',cantidad:r.cantidad||'',nota:r.nota||'',frio:!!r.frio,
+                   estado:(S.items[k]?S.items[k].estado:0)} } }
+      S={v:1,ejemplo:!!d.ejemplo,pases:d.pases,platos:d.platos,items:nuevos};
+      guardaLocal(); ponSync('ok'); render();
+    },function(){ ponSync('error') });
+
+    db.doc(RUTA_S).onSnapshot(function(snap){
+      if(!snap.exists){ estadosCreado=false; subirEstados(null); return }
+      estadosCreado=true;
+      var d=snap.data()||{}, cambio=false;
+      for(var k in d){ if(d.hasOwnProperty(k)&&S.items[k]&&typeof d[k]==='number'&&S.items[k].estado!==d[k]){
+        S.items[k].estado=d[k]; cambio=true } }
+      if(cambio){ guardaLocal(); render() } else { ponSync('ok') }
+    },function(){ ponSync('error') });
+  },function(){ ponSync('local') });
+}
+
+render();
+conectar();
+})();
+</script>

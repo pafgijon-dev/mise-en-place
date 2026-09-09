@@ -33,6 +33,43 @@ verde, nada tocado → rojo, cualquier mezcla → naranja.
 El botón ⟳ de la cabecera empieza un servicio nuevo: devuelve todo a rojo,
 dejando marcar antes lo que aguanta y sigue en verde.
 
+## Instalarla como aplicación
+
+La web está publicada en GitHub Pages y es una PWA: se instala y funciona sin
+conexión.
+
+- **iPhone y iPad** — abrir en Safari (no dentro de otra app), botón Compartir →
+  *Añadir a pantalla de inicio*. Arranca a pantalla completa, sin barra del
+  navegador.
+- **PC y Mac** — en Chrome o Edge aparece el icono de instalar a la derecha de
+  la barra de direcciones, o menú ⋮ → *Instalar*. Queda con ventana propia y su
+  entrada en el menú de inicio.
+- **Android** — el navegador ofrece instalarla al entrar.
+
+Instalada, guarda los datos en el propio dispositivo y no los pierde al cerrar.
+Cada aparato lleva su lista: no se sincronizan entre sí.
+
+## Archivos
+
+| Archivo | Qué es |
+|---|---|
+| `mise-en-place.html` | La fuente. Es lo que se publica como Artifact. |
+| `index.html` | **Generado.** La web completa que sirve GitHub Pages. |
+| `build.sh` | Genera `index.html` a partir de la fuente. |
+| `sw.js` | Service worker: instalación y funcionamiento sin cobertura. |
+| `manifest.webmanifest` | Nombre, iconos y modo de ventana de la app. |
+| `tools/make-icons.ps1` | Dibuja los iconos PNG por código, sin dependencias. |
+| `iconos/` | **Generados.** Salida del script anterior. |
+
+Después de tocar `mise-en-place.html` hay que regenerar la web:
+
+```sh
+sh build.sh
+```
+
+`index.html` va versionado a propósito, aunque sea generado: GitHub Pages sirve
+lo que hay en el repositorio y no ejecuta ningún paso de construcción.
+
 ## Cómo funciona por dentro
 
 Un solo archivo, `mise-en-place.html`, sin dependencias más allá de las

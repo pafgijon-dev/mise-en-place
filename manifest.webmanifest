@@ -1,0 +1,17 @@
+{
+  "name": "Mise en Place del Pase",
+  "short_name": "Mise en Place",
+  "description": "Control del mise en place del pase: pases, platos e ingredientes con semáforo rojo, naranja y verde.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#E9ECEA",
+  "theme_color": "#E9ECEA",
+  "icons": [
+    { "src": "iconos/icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "iconos/icono-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "iconos/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

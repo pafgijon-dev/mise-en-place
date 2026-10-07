@@ -259,44 +259,55 @@ var I = {
 var KEY='mep.v1';
 function uid(p){return p+Math.random().toString(36).slice(2,8)}
 
+/* Carta de partida: el pase de Primeros tal como está montado en la casa.
+   Los nombres van tal cual se escribieron en la app, sin corregir.
+   Todo arranca en rojo: un dispositivo nuevo empieza un servicio desde cero. */
 function seed(){
   var it={};
-  function mk(id,nombre,cantidad,estado,frio,nota){it[id]={id:id,nombre:nombre,cantidad:cantidad||'',nota:nota||'',frio:!!frio,estado:estado};return id}
-  mk('i1','Croquetas de jamón','24 ud',2,true,'Sacar la noche antes');
-  mk('i2','Alioli de ajo negro','300 g',2,false,'');
-  mk('i3','Brotes aliñados','2 bandejas',2,false,'Aliñar en el momento');
-  mk('i4','Carne picada a cuchillo','800 g',1,false,'');
-  mk('i5','Aliño de tartar','250 ml',2,false,'');
-  mk('i6','Yemas curadas','12 ud',0,false,'48 h en sal y azúcar');
-  mk('i7','Pan de cristal','2 barras',0,false,'Tostar al pase');
-  mk('i8','Lomos de lubina','16 ud',0,true,'Sacar por la mañana');
-  mk('i9','Beurre blanc','700 ml',0,false,'Montar al momento, no hervir');
-  mk('i10','Puré de coliflor','1,5 L',0,false,'');
-  mk('i11','Cebolla encurtida','500 g',0,false,'');
-  mk('i12','Carrillera cocinada','14 ud',2,true,'Sacar 2 días antes');
-  mk('i13','Jugo de carne','1 L',1,true,'Sacar la noche antes');
-  mk('i14','Puré de patata trufado','2 L',0,false,'Regenerar a 65°');
-  mk('i15','Chips de puerro','1 bandeja',0,false,'');
-  mk('i16','Coulant de chocolate','18 ud',0,true,'Sacar 3 h antes');
-  mk('i17','Helado de vainilla','1 cubeta',0,true,'');
-  mk('i18','Crumble de avellana','400 g',0,false,'');
-  mk('i19','Tarta de queso','2 moldes',0,false,'Sacar de cámara 1 h antes');
-  mk('i20','Frutos rojos macerados','600 g',0,false,'');
+  function mk(id,nombre,frio,cantidad,nota){
+    it[id]={id:id,nombre:nombre,cantidad:cantidad||'',nota:nota||'',frio:!!frio,estado:0};
+    return id;
+  }
+  mk('i1','Megillones');            mk('i2','Ensaldilla');          mk('i3','Pan ensaladilla');
+  mk('i4','Cebolla cramelizada');   mk('i5','Cherris');             mk('i6','Vetresca');
+  mk('i7','Aguacate');              mk('i8','Vinagreta miel');
+  mk('i9','Masa buñueos');          mk('i10','Bacalao',true);       mk('i11','Mojo');
+  mk('i12','Chipis',true);          mk('i13','Cabolla chipis');
+  mk('i14','Ali oli');              mk('i15','Ali oli negro');
+  mk('i16','Masa temperatura');     mk('i17','Pimiento verde');     mk('i18','Pimieto rojo');
+  mk('i19','Calabacín');            mk('i20','Zanahoria');          mk('i21','Espárragos blanqueados');
+  mk('i22','Langostino crudo',true);mk('i23','Caramelo soja');
+  mk('i24','Chipis rellenos');
+  mk('i25','Aguacate dados');       mk('i26','Mango dados');        mk('i27','Langostino picado');
+  mk('i28','Langostino cocido');    mk('i29','Vinagreta lima');     mk('i30','Limas');
+  mk('i31','Huevos');               mk('i32','Jamón');              mk('i33','Aceite trufa');
+  mk('i34','Pimenton');
+  mk('i35','Croquetas rabo');       mk('i36','Salsa de rabo');
+  mk('i37','Croquetas boletus');    mk('i38','Miqui');
+  mk('i39','Anchoas');              mk('i40','Pan cristal');        mk('i41','Tomate con casse');
+  mk('i42','Pan centeno');          mk('i43','Tumaca');
+  mk('i44','Croquetas de jamón',true,'24 ud','Sacar la noche antes');
+  mk('i45','Pollo empanado');       mk('i46','Pollo plancha',true); mk('i47','Nuggets');
 
   var pl={
-    d1:{id:'d1',nombre:'Croquetas de jamón',itemIds:['i1','i2','i3']},
-    d2:{id:'d2',nombre:'Steak tartar',itemIds:['i4','i5','i6','i7','i3']},
-    d3:{id:'d3',nombre:'Lubina a la brasa',itemIds:['i8','i9','i10','i11']},
-    d4:{id:'d4',nombre:'Carrillera ibérica',itemIds:['i12','i13','i14','i11','i15']},
-    d5:{id:'d5',nombre:'Coulant de chocolate',itemIds:['i16','i17','i18']},
-    d6:{id:'d6',nombre:'Tarta de queso',itemIds:['i19','i20']}
+    d1:{id:'d1',nombre:'Ensaladilla mejillones',itemIds:['i1','i2','i3']},
+    d2:{id:'d2',nombre:'Ensalada Ventresca',itemIds:['i4','i5','i6','i7','i8']},
+    d3:{id:'d3',nombre:'Buñuelos bacalao',itemIds:['i9','i10','i11']},
+    d4:{id:'d4',nombre:'Chipis plancha',itemIds:['i12','i13','i14','i15']},
+    d5:{id:'d5',nombre:'Tempura',itemIds:['i16','i17','i18','i19','i20','i21','i22','i11','i23']},
+    d6:{id:'d6',nombre:'Chipis rellenos',itemIds:['i24','i15','i14']},
+    d7:{id:'d7',nombre:'Tartar langostino',itemIds:['i25','i26','i27','i28','i29','i30']},
+    d8:{id:'d8',nombre:'Huevos rotos',itemIds:['i31','i32','i33','i34']},
+    d9:{id:'d9',nombre:'Croquetas rabo',itemIds:['i35','i36']},
+    d10:{id:'d10',nombre:'Croquetas boletus',itemIds:['i37','i38']},
+    d11:{id:'d11',nombre:'Anchoas',itemIds:['i39','i40','i41']},
+    d12:{id:'d12',nombre:'Jamón',itemIds:['i42','i43']},
+    d13:{id:'d13',nombre:'MP',itemIds:['i44','i45','i46','i47']}
   };
   return {
-    v:1, ejemplo:true,
+    v:1, ejemplo:false,
     pases:[
-      {id:'p1',nombre:'Pase 1 · Entrantes',platoIds:['d1','d2']},
-      {id:'p2',nombre:'Pase 2 · Principales',platoIds:['d3','d4']},
-      {id:'p3',nombre:'Pase 3 · Postres',platoIds:['d5','d6']}
+      {id:'p1',nombre:'Primeros',platoIds:['d1','d2','d3','d4','d5','d6','d7','d8','d9','d10','d11','d12','d13']}
     ],
     platos:pl, items:it
   };
@@ -957,7 +968,8 @@ function conectar(){
 
 /* Restos de borrados anteriores, de cuando eliminar un plato dejaba sueltos
    sus ingredientes: fuera, antes de pintar nada. */
-if(limpiaHuerfanos()) guardaLocal();
+limpiaHuerfanos();
+guardaLocal();   /* deja fijada la carta ya en el primer arranque */
 
 render();
 conectar();

@@ -172,6 +172,8 @@ main{flex:1;padding:14px 14px 96px;display:flex;flex-direction:column;gap:14px}
 .search{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 12px;box-shadow:var(--shadow)}
 .search svg{width:19px;height:19px;fill:none;stroke:var(--ink-3);stroke-width:2;flex:none}
 .search input{flex:1;border:0;background:none;padding:13px 0;outline:none;font-size:16px}
+.filarow{display:flex;align-items:center;gap:9px;min-width:0}
+.filab{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);flex:none;width:36px}
 .filters{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .filters::-webkit-scrollbar{display:none}
 .fbtn{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;text-transform:uppercase;padding:7px 13px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);white-space:nowrap;flex:none}
@@ -324,7 +326,7 @@ var S=load()||seed();
 
 /* ============ vista ============ */
 var view={n:'pases'};
-var edit=false, filtro='pend', q='', flashId=null;
+var edit=false, filtro='pend', fPase='todos', q='', flashId=null;
 
 /* ============ utilidades ============ */
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -350,6 +352,37 @@ function usosDe(itemId){
   return out;
 }
 function todosItems(){var a=[];for(var k in S.items){if(S.items.hasOwnProperty(k))a.push(S.items[k])}return a}
+function pasesDe(itemId){
+  var us=usosDe(itemId), vistos={}, a=[];
+  for(var i=0;i<us.length;i++){ if(!vistos[us[i].pase.id]){ vistos[us[i].pase.id]=1; a.push(us[i].pase) } }
+  return a;
+}
+/* Un ingrediente sin ningún plato que lo reclame no es dato, es resto: solo
+   aparece al borrar el plato que lo usaba, y ensucia el repaso general. */
+function limpiaHuerfanos(){
+  var usados={}, k, i;
+  for(k in S.platos){ if(S.platos.hasOwnProperty(k)){
+    var ids=S.platos[k].itemIds;
+    for(i=0;i<ids.length;i++) usados[ids[i]]=1;
+  } }
+  var fuera=0;
+  for(k in S.items){ if(S.items.hasOwnProperty(k) && !usados[k]){ delete S.items[k]; fuera++ } }
+  return fuera;
+}
+/* Cuántos ingredientes se irían con estos platos: los que no usa nadie más. */
+function exclusivosDe(platoIds){
+  var dentro={}, i, j, n=0;
+  for(i=0;i<platoIds.length;i++){
+    var d=S.platos[platoIds[i]]; if(!d) continue;
+    for(j=0;j<d.itemIds.length;j++) dentro[d.itemIds[j]]=1;
+  }
+  for(var id in dentro){ if(dentro.hasOwnProperty(id)){
+    var us=usosDe(id), solo=true;
+    for(i=0;i<us.length;i++){ if(platoIds.indexOf(us[i].plato.id)<0){ solo=false; break } }
+    if(solo) n++;
+  } }
+  return n;
+}
 function nombreCorto(n){var i=n.indexOf(' · ');return i>0?{eye:n.slice(0,i),tit:n.slice(i+3)}:{eye:'',tit:n}}
 function claseEstado(e){return e===2?'e2':(e===1?'e1':'e0')}
 function nomEstado(e){return e===2?'Listo':(e===1?'Empezado':'Sin empezar')}
@@ -385,6 +418,16 @@ function filaEdit(id,nombre,tipo,i,n,sub){
     '<button type="button" class="mini danger" data-act="del" data-tipo="'+tipo+'" data-id="'+id+'" aria-label="Eliminar">'+I.trash+'</button>'+
   '</div>';
 }
+/* En el repaso general el orden lo manda el color, así que aquí no hay flechas
+   de reordenar: solo editar la ficha y eliminar de todos los platos a la vez. */
+function filaEditGlobal(it,sub){
+  return '<div class="editrow" data-id="'+it.id+'">'+
+    '<span class="dot '+claseEstado(it.estado)+'" style="margin-left:14px;width:16px;height:16px;border-width:3px" aria-hidden="true"></span>'+
+    '<span class="nm" style="padding-left:0">'+esc(it.nombre)+(sub?' <span class="where">'+sub+'</span>':'')+'</span>'+
+    '<button type="button" class="mini" data-act="edit" data-tipo="itemGlobal" data-id="'+it.id+'" aria-label="Editar '+esc(it.nombre)+'">'+I.pencil+'</button>'+
+    '<button type="button" class="mini danger" data-act="del" data-tipo="itemGlobal" data-id="'+it.id+'" aria-label="Eliminar '+esc(it.nombre)+'">'+I.trash+'</button>'+
+  '</div>';
+}
 function addRow(act,texto){return '<button class="add" data-act="'+act+'">'+I.plus+esc(texto)+'</button>'}
 
 /* ============ pantallas ============ */
@@ -405,8 +448,11 @@ function pintaBar(){
        '<div class="titles"><span class="eyebrow">'+esc(p2?p2.nombre:'')+'</span><h1>'+esc(d?d.nombre:'')+'</h1></div>'+
        '<button class="txtbtn'+(edit?' on':'')+'" data-act="toggleEdit">'+(edit?'Hecho':'Editar')+'</button>';
   } else {
-    h+='<div class="titles"><span class="eyebrow">Todo el servicio</span><h1>Repaso de ingredientes</h1></div>'+
-       '<button class="iconbtn" data-act="reset" aria-label="Nuevo servicio">'+I.reset+'</button>';
+    var pv=fPase==='todos'?null:pase(fPase);
+    h+='<div class="titles"><span class="eyebrow">'+(pv?'Repaso del pase':'Todo el servicio')+'</span>'+
+       '<h1>'+esc(pv?nombreCorto(pv.nombre).tit:'Repaso general')+'</h1></div>'+
+       '<button class="iconbtn" data-act="reset" aria-label="Nuevo servicio">'+I.reset+'</button>'+
+       '<button class="txtbtn'+(edit?' on':'')+'" data-act="toggleEdit">'+(edit?'Hecho':'Editar')+'</button>';
   }
   b.innerHTML=h;
 }
@@ -486,8 +532,16 @@ function vistaPlato(){
 
 function vistaTodo(){
   var h='', its=todosItems(), lista=[];
+  if(fPase!=='todos'&&!pase(fPase)) fPase='todos';
   for(var i=0;i<its.length;i++){
     var it=its[i], us=usosDe(it.id);
+    if(!us.length) continue;
+    if(fPase!=='todos'){
+      var enPase=false;
+      for(var w=0;w<us.length;w++){ if(us[w].pase.id===fPase){ enPase=true; break } }
+      if(!enPase) continue;
+      us=us.filter(function(u){return u.pase.id===fPase});
+    }
     if(filtro==='frio'&&!it.frio) continue;
     if(filtro==='pend'&&it.estado===2) continue;
     if(q){
@@ -502,17 +556,40 @@ function vistaTodo(){
     return a.it.nombre.localeCompare(b.it.nombre,'es');
   });
 
+  var pasesChips='<button class="fbtn'+(fPase==='todos'?' on':'')+'" data-act="fpase" data-v="todos">Todos</button>';
+  for(var p=0;p<S.pases.length;p++){
+    pasesChips+='<button class="fbtn'+(fPase===S.pases[p].id?' on':'')+'" data-act="fpase" data-v="'+S.pases[p].id+'">'+
+      esc(nombreCorto(S.pases[p].nombre).tit)+'</button>';
+  }
   h+='<div class="tools"><div class="search">'+I.search+
      '<input id="q" type="text" inputmode="search" placeholder="Buscar ingrediente o plato" value="'+esc(q)+'" aria-label="Buscar"></div>'+
-     '<div class="filters">'+
+     '<div class="filarow"><span class="filab">Pase</span><div class="filters">'+pasesChips+'</div></div>'+
+     '<div class="filarow"><span class="filab">Ver</span><div class="filters">'+
      '<button class="fbtn'+(filtro==='pend'?' on':'')+'" data-act="filtro" data-v="pend">Pendientes</button>'+
-     '<button class="fbtn'+(filtro==='todos'?' on':'')+'" data-act="filtro" data-v="todos">Todos</button>'+
+     '<button class="fbtn'+(filtro==='todos'?' on':'')+'" data-act="filtro" data-v="todos">Todo</button>'+
      '<button class="fbtn'+(filtro==='frio'?' on':'')+'" data-act="filtro" data-v="frio">❄ Congelador</button>'+
-     '</div></div>';
+     '</div></div></div>';
 
+  var ambito = fPase==='todos' ? 'en ningún pase' : 'en este pase';
   if(!lista.length){
     h+='<div class="empty"><strong>'+(filtro==='pend'&&!q?'Todo listo':'Nada que mostrar')+'</strong>'+
-       (filtro==='pend'&&!q?'No queda nada pendiente en ningún pase.':'Prueba con otro filtro o búsqueda.')+'</div>';
+       (filtro==='pend'&&!q?'No queda nada pendiente '+ambito+'.':'Prueba con otro filtro o búsqueda.')+'</div>';
+    return h;
+  }
+  if(edit){
+    h+='<div class="sec"><h2>Eliminar ingredientes</h2><span class="n">'+lista.length+'</span><span class="ln"></span></div><div class="list">';
+    for(var k=0;k<lista.length;k++){
+      var ie=lista[k].it, sub;
+      if(fPase==='todos'){
+        var pse=pasesDe(ie.id);
+        sub = pse.length>1 ? pse.length+' pases' : (pse.length?esc(nombreCorto(pse[0].nombre).tit):'');
+      } else {
+        var ue=lista[k].us;
+        sub = ue.length>1 ? ue.length+' platos' : esc(ue[0].plato.nombre);
+      }
+      h+=filaEditGlobal(ie, sub);
+    }
+    h+='</div>';
     return h;
   }
   var ult=-1;
@@ -524,8 +601,13 @@ function vistaTodo(){
       h+='<div class="sec '+['rojo','naranja','verde'][e]+'"><h2>'+nomEstado(e)+'</h2><span class="n">'+n+'</span><span class="ln"></span></div><div class="list">';
       ult=e;
     }
-    var u=lista[j].us;
-    var ctx = u.length ? (u.length>1 ? u.length+' platos' : nombreCorto(u[0].pase.nombre).tit) : 'Sin plato';
+    var u=lista[j].us, ctx;
+    if(fPase==='todos'){
+      var ps=pasesDe(lista[j].it.id);
+      ctx = ps.length>1 ? ps.length+' pases' : nombreCorto(ps[0].nombre).tit;
+    } else {
+      ctx = u.length>1 ? u.length+' platos' : u[0].plato.nombre;
+    }
     h+=filaItem(lista[j].it,'', esc(ctx));
   }
   h+='</div>';
@@ -583,15 +665,17 @@ function sheetNombre(titulo,valor,label,cb){
     function(a){if(a==='cerrar')cerrarSheet()});
 }
 function sheetItem(it,platoId){
-  var us=usosDe(it.id), esNuevo=!platoId;
+  var us=usosDe(it.id), global=!platoId;
   var cuerpo=
     '<label class="f">Nombre<input type="text" name="nombre" value="'+esc(it.nombre)+'" autocomplete="off" required></label>'+
     '<label class="f">Cantidad<input type="text" name="cantidad" value="'+esc(it.cantidad)+'" autocomplete="off" placeholder="500 g · 2 L · 12 raciones"></label>'+
     '<label class="f">Nota<input type="text" name="nota" value="'+esc(it.nota)+'" autocomplete="off" placeholder="Regenerar 8 min a 180°"></label>'+
     '<label class="toggle"><input type="checkbox" name="frio" '+(it.frio?'checked':'')+'><span class="tt"><b>Sale del congelador</b><span>Aparece con ❄ y en el filtro de congelador</span></span></label>';
   if(us.length>1) cuerpo+='<p class="hint">Este ingrediente se usa en <b>'+us.length+' platos</b>: '+esc(us.map(function(u){return u.plato.nombre}).join(', '))+'. Al marcarlo se actualiza en todos.</p>';
-  var pie='<button type="button" class="btn danger" data-sact="borrar">'+(us.length>1?'Quitar de este plato':'Eliminar')+'</button><button type="submit" class="btn primary">Guardar</button>';
-  abrirSheet(esNuevo?'Nuevo ingrediente':'Editar ingrediente',cuerpo,pie,
+  var pie='<button type="button" class="btn danger" data-sact="borrar">'+
+    (global ? (us.length>1?'Eliminar de los '+us.length+' platos':'Eliminar') : (us.length>1?'Quitar de este plato':'Eliminar'))+
+    '</button><button type="submit" class="btn primary">Guardar</button>';
+  abrirSheet('Editar ingrediente',cuerpo,pie,
     function(fd){
       it.nombre=(fd.get('nombre')||'').trim()||it.nombre;
       it.cantidad=(fd.get('cantidad')||'').trim();
@@ -603,7 +687,7 @@ function sheetItem(it,platoId){
       if(a==='cerrar')return cerrarSheet();
       if(a==='borrar'){
         var pl=S.platos[platoId||view.platoId];
-        if(us.length>1&&pl){ pl.itemIds=pl.itemIds.filter(function(x){return x!==it.id}) }
+        if(!global&&us.length>1&&pl){ pl.itemIds=pl.itemIds.filter(function(x){return x!==it.id}) }
         else{
           for(var k in S.platos){if(S.platos.hasOwnProperty(k)){S.platos[k].itemIds=S.platos[k].itemIds.filter(function(x){return x!==it.id})}}
           delete S.items[it.id];
@@ -696,9 +780,10 @@ document.getElementById('screen').addEventListener('click',function(e){
   }
   if(a==='abrirPase'){ view={n:'platos',paseId:id}; edit=false; render(); return }
   if(a==='abrirPlato'){ view={n:'plato',paseId:view.paseId,platoId:id}; edit=false; render(); return }
-  if(a==='verFrio'){ view={n:'todo'}; filtro='frio'; q=''; render(); return }
+  if(a==='verFrio'){ view={n:'todo'}; filtro='frio'; fPase='todos'; q=''; edit=false; render(); return }
   if(a==='vaciar'){ sheetVaciar(); return }
   if(a==='filtro'){ filtro=el.dataset.v; document.body.dataset.focusq='0'; render(); return }
+  if(a==='fpase'){ fPase=el.dataset.v; document.body.dataset.focusq='0'; render(); return }
 
   if(a==='nuevoPase'){ sheetNombre('Nuevo pase','','Nombre del pase',function(v){
       var np={id:uid('p'),nombre:v,platoIds:[]}; S.pases.push(np); }); return }
@@ -717,26 +802,34 @@ document.getElementById('screen').addEventListener('click',function(e){
     if(tipo==='pase'){ var p4=pase(id); sheetNombre('Editar pase',p4.nombre,'Nombre del pase',function(v){p4.nombre=v}) }
     if(tipo==='plato'){ var d4=S.platos[id]; sheetNombre('Editar plato',d4.nombre,'Nombre del plato',function(v){d4.nombre=v}) }
     if(tipo==='item'){ sheetItem(S.items[id],view.platoId) }
+    if(tipo==='itemGlobal'){ sheetItem(S.items[id],null) }
     return;
   }
   if(a==='del'){
     if(tipo==='pase'){
-      var p5=pase(id);
-      abrirSheet('Eliminar pase','<p class="hint">Se elimina <b>'+esc(p5.nombre)+'</b> y sus '+p5.platoIds.length+' platos. Los ingredientes siguen disponibles para otros platos.</p>',
+      var p5=pase(id), ex5=exclusivosDe(p5.platoIds);
+      abrirSheet('Eliminar pase','<p class="hint">Se elimina <b>'+esc(p5.nombre)+'</b> con sus '+p5.platoIds.length+' platos'+
+        (ex5?' y los '+ex5+' ingredientes que solo usan ellos':'')+
+        '. Los que también estén en otros platos se quedan.</p>',
         '<button type="button" class="btn" data-sact="cerrar">Cancelar</button><button type="submit" class="btn danger">Eliminar</button>',
         function(){ for(var i=0;i<p5.platoIds.length;i++)delete S.platos[p5.platoIds[i]];
-          S.pases=S.pases.filter(function(x){return x.id!==id}); cerrarSheet(); touched(); save(); render() },
+          S.pases=S.pases.filter(function(x){return x.id!==id}); limpiaHuerfanos();
+          cerrarSheet(); touched(); save(); render() },
         function(x){if(x==='cerrar')cerrarSheet()});
     }
     if(tipo==='plato'){
-      var d5=S.platos[id];
-      abrirSheet('Eliminar plato','<p class="hint">Se elimina <b>'+esc(d5.nombre)+'</b> de este pase. Los ingredientes siguen disponibles para otros platos.</p>',
+      var d5=S.platos[id], ex6=exclusivosDe([id]);
+      abrirSheet('Eliminar plato','<p class="hint">Se elimina <b>'+esc(d5.nombre)+'</b>'+
+        (ex6?' y los '+ex6+' ingredientes que solo usa él':'')+
+        '. Los compartidos con otros platos se quedan.</p>',
         '<button type="button" class="btn" data-sact="cerrar">Cancelar</button><button type="submit" class="btn danger">Eliminar</button>',
         function(){ var p6=pase(view.paseId); if(p6)p6.platoIds=p6.platoIds.filter(function(x){return x!==id});
-          delete S.platos[id]; cerrarSheet(); touched(); save(); render() },
+          delete S.platos[id]; limpiaHuerfanos();
+          cerrarSheet(); touched(); save(); render() },
         function(x){if(x==='cerrar')cerrarSheet()});
     }
     if(tipo==='item'){ sheetItem(S.items[id],view.platoId) }
+    if(tipo==='itemGlobal'){ sheetItem(S.items[id],null) }
     return;
   }
 });
@@ -835,7 +928,7 @@ function conectar(){
         nuevos[k]={id:k,nombre:r.nombre||'',cantidad:r.cantidad||'',nota:r.nota||'',frio:!!r.frio,
                    estado:(S.items[k]?S.items[k].estado:0)} } }
       S={v:1,ejemplo:!!d.ejemplo,pases:d.pases,platos:d.platos,items:nuevos};
-      guardaLocal(); ponSync('ok'); render();
+      limpiaHuerfanos(); guardaLocal(); ponSync('ok'); render();
     },function(){ ponSync('error') });
 
     db.doc(RUTA_S).onSnapshot(function(snap){
@@ -848,6 +941,10 @@ function conectar(){
     },function(){ ponSync('error') });
   },function(){ ponSync('local') });
 }
+
+/* Restos de borrados anteriores, de cuando eliminar un plato dejaba sueltos
+   sus ingredientes: fuera, antes de pintar nada. */
+if(limpiaHuerfanos()) guardaLocal();
 
 render();
 conectar();

@@ -26,9 +26,16 @@ verde, nada tocado → rojo, cualquier mezcla → naranja.
    congelador) y un pase por fila, con barra segmentada: un segmento por plato.
 2. **Platos** del pase seleccionado, con la misma lógica.
 3. **Ingredientes** del plato, con cantidad, nota y marca ❄ de congelador.
-4. **Todo** — todos los ingredientes del servicio ordenados sin empezar →
-   empezado → listo, con buscador y filtros. Dentro de cada bloque, lo de
-   congelador sube primero.
+4. **Todo** — el repaso. Ingredientes ordenados sin empezar → empezado → listo,
+   con buscador y dos filtros: por **pase**, para repasar uno solo sin el ruido
+   de los demás, y por estado o congelador. Dentro de cada bloque, lo de
+   congelador sube primero. Mirando un pase concreto, cada línea indica su
+   plato; mirando todo el servicio, su pase.
+
+Un ingrediente existe mientras algún plato lo use. Al borrar un plato se van
+con él los que solo usaba él, y los compartidos se quedan; el diálogo dice
+cuántos antes de confirmar. Desde *Editar* en el repaso se elimina cualquier
+ingrediente de todos sus platos a la vez.
 
 El botón ⟳ de la cabecera empieza un servicio nuevo: devuelve todo a rojo,
 dejando marcar antes lo que aguanta y sigue en verde.

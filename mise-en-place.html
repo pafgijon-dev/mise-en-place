@@ -88,6 +88,17 @@ main{flex:1;padding:14px 14px 96px;display:flex;flex-direction:column;gap:14px}
 .count{font-size:14px;font-weight:600;letter-spacing:-.01em}
 .pad-l{padding-left:14px}
 
+/* fila de plato: el círculo marca el plato entero, el resto entra en él */
+.rowwrap{display:flex;align-items:stretch;border-top:1px solid var(--line-2)}
+.list>.rowwrap:first-child{border-top:0}
+.rowwrap .stripe{margin:0}
+.rowwrap .row{border-top:0;flex:1;min-width:0;padding-left:0}
+.tick{display:grid;place-items:center;padding:0 11px 0 14px;flex:none}
+.tick:hover{background:var(--surface-2)}
+.tick .dot{margin-left:0}
+.secbtn{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:14px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);padding:4px 9px;border-radius:8px;flex:none}
+.secbtn:hover{background:var(--surface-3)}
+
 /* franja de estado a la izquierda de grupos */
 .stripe{width:6px;align-self:stretch;flex:none;margin:-11px 0;border-radius:0}
 .stripe.e0{background:var(--rojo)} .stripe.e1{background:var(--naranja)} .stripe.e2{background:var(--verde)}
@@ -376,8 +387,9 @@ function segbar(segs){
   for(var i=0;i<segs.length;i++)h+='<i class="'+claseEstado(segs[i])+'"></i>';
   return h+'</span>';
 }
+function marcaDe(e){ return e===2?I.check:(e===1?'<span class="half"></span>':'') }
 function filaItem(it,extraMeta,ctx){
-  var e=it.estado, marca=e===2?I.check:(e===1?'<span class="half"></span>':'');
+  var e=it.estado, marca=marcaDe(e);
   var meta='';
   if(it.cantidad) meta+='<span class="qty">'+esc(it.cantidad)+'</span>';
   if(it.frio) meta+='<span class="chip frio">❄ Congelador</span>';
@@ -481,10 +493,15 @@ function vistaPlatos(){
     var d=pls[k], st=estadoPlato(d);
     if(edit){ h+=filaEdit(d.id,d.nombre,'plato',k,pls.length,st.total+' ingredientes'); }
     else{
-      h+='<button class="row" data-act="abrirPlato" data-id="'+d.id+'">'+
+      h+='<div class="rowwrap">'+
          '<span class="stripe '+(st.total?claseEstado(st.estado):'empty')+'"></span>'+
-         '<span class="row-main pad-l"><span class="row-title">'+esc(d.nombre)+'</span>'+segbar(st.segs)+'</span>'+
-         '<span class="row-right"><span class="count mono">'+st.hechos+'/'+st.total+'</span>'+I.chev+'</span></button>';
+         (st.total?'<button class="tick" data-act="togglePlato" data-id="'+d.id+'" aria-label="'+
+            (st.estado===2?'Desmarcar ':'Marcar como listo ')+esc(d.nombre)+'"><span class="dot '+claseEstado(st.estado)+'">'+
+            marcaDe(st.estado)+'</span></button>':'')+
+         '<button class="row" data-act="abrirPlato" data-id="'+d.id+'">'+
+         '<span class="row-main'+(st.total?'':' pad-l')+'"><span class="row-title">'+esc(d.nombre)+'</span>'+segbar(st.segs)+'</span>'+
+         '<span class="row-right"><span class="count mono">'+st.hechos+'/'+st.total+'</span>'+I.chev+'</span></button>'+
+         '</div>';
     }
   }
   h+=addRow('nuevoPlato','Añadir plato')+'</div>';
@@ -495,7 +512,9 @@ function vistaPlato(){
   var d=S.platos[view.platoId]; if(!d){view={n:'platos',paseId:view.paseId};return vistaPlatos()}
   var its=itemsDe(d), st=estadoPlato(d), h='';
   h+='<div class="sec '+(st.total?['rojo','naranja','verde'][st.estado]:'')+'"><h2>'+(st.total?nomEstado(st.estado):'Sin ingredientes')+'</h2>'+
-     '<span class="n">'+st.hechos+'/'+st.total+'</span><span class="ln"></span></div>';
+     '<span class="n">'+st.hechos+'/'+st.total+'</span><span class="ln"></span>'+
+     (st.total?'<button class="secbtn" data-act="togglePlato" data-id="'+d.id+'">'+(st.estado===2?'Desmarcar':'Marcar todo')+'</button>':'')+
+     '</div>';
   if(!its.length) h+='<div class="empty"><strong>Sin ingredientes todavía</strong>Añade lo que necesitas tener preparado para este plato.</div>';
   h+='<div class="list">';
   for(var i=0;i<its.length;i++){
@@ -759,6 +778,18 @@ document.getElementById('screen').addEventListener('click',function(e){
   if(a==='cycle'){
     var it=S.items[id]; if(!it)return;
     it.estado=(it.estado+1)%3; flashId=id; saveEstado(id); render(); return;
+  }
+  /* Un plato entero de golpe: si no está todo listo, se pone todo listo; si ya
+     lo estaba, vuelve a rojo. Los ingredientes compartidos cambian también en
+     los demás platos que los lleven — el color es del ingrediente, no del plato. */
+  if(a==='togglePlato'){
+    var dp=S.platos[id]; if(!dp) return;
+    var itsp=itemsDe(dp); if(!itsp.length) return;
+    var todoListo=true;
+    for(var t=0;t<itsp.length;t++){ if(itsp[t].estado!==2){ todoListo=false; break } }
+    var nuevo=todoListo?0:2, campos={};
+    for(var t2=0;t2<itsp.length;t2++){ itsp[t2].estado=nuevo; campos[itsp[t2].id]=nuevo }
+    guardaLocal(); subirEstados(campos); render(); return;
   }
   if(a==='abrirPase'){ view={n:'platos',paseId:id}; edit=false; render(); return }
   if(a==='abrirPlato'){ view={n:'plato',paseId:view.paseId,platoId:id}; edit=false; render(); return }

@@ -24,7 +24,10 @@ verde, nada tocado → rojo, cualquier mezcla → naranja.
 
 1. **Pases** — resumen del servicio (pendiente / listo / por sacar del
    congelador) y un pase por fila, con barra segmentada: un segmento por plato.
-2. **Platos** del pase seleccionado, con la misma lógica.
+2. **Platos** del pase seleccionado, con la misma lógica. El círculo de la
+   izquierda marca el plato entero de un toque, sin entrar en él: todo listo, o
+   todo a cero si ya lo estaba. Dentro del plato, el mismo gesto es el botón
+   *Marcar todo*.
 3. **Ingredientes** del plato, con cantidad, nota y marca ❄ de congelador.
 4. **Todo** — el repaso. Ingredientes ordenados sin empezar → empezado → listo,
    con buscador y dos filtros: por **pase**, para repasar uno solo sin el ruido

@@ -965,6 +965,9 @@ function conectar(){
       var d=snap.data()||{};
       if(d.por===clienteId){ ponSync('ok'); return }
       if(!Array.isArray(d.pases)||!d.platos||!d.items){ ponSync('ok'); return }
+      /* Una estructura sin pases es un almacén sin estrenar, no una carta
+         vacía: antes de tragárnosla, subimos la que trae este dispositivo. */
+      if(!d.pases.length && S.pases.length){ subirEstructura(); return }
       var nuevos={};
       for(var k in d.items){ if(d.items.hasOwnProperty(k)){ var r=d.items[k]||{};
         nuevos[k]={id:k,nombre:r.nombre||'',cantidad:r.cantidad||'',nota:r.nota||'',frio:!!r.frio,
